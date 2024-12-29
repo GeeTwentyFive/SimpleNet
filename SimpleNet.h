@@ -65,10 +65,6 @@ SimpleNet__EventCallback _SimpleNet__eventCallback = 0;
 
 
 
-
-
-
-
 void* _SimpleNet__Thread(void*) {
 
         ENetEvent event;
@@ -79,10 +75,6 @@ void* _SimpleNet__Thread(void*) {
         }
 
 }
-
-
-
-
 
 
 
