@@ -43,17 +43,6 @@ typedef void (*SimpleNet__EventCallback)(SimpleNet__Event*);
 
 #define SimpleNet__FreePacket enet_packet_destroy
 
-
-
-int _SimpleNet__bInitialized = 0;
-ENetAddress _SimpleNet__address = {0};
-ENetHost *_SimpleNet__host = 0;
-ENetPeer *_SimpleNet__peer = 0;
-pthread_t _SimpleNet__threadID = 0;
-SimpleNet__EventCallback _SimpleNet__eventCallback = 0;
-
-
-
 typedef enum {
         SIMPLENET__SUCCESS,
         SIMPLENET__ERROR_FAILED_TO_INITIALIZE_ENET,
@@ -64,6 +53,15 @@ typedef enum {
         SIMPLENET__ERROR_FAILED_TO_QUEUE_PACKET,
         SIMPLENET__ERROR_FAILED_TO_START_THREAD
 } SimpleNet__Error;
+
+
+
+int _SimpleNet__bInitialized = 0;
+ENetAddress _SimpleNet__address = {0};
+ENetHost *_SimpleNet__host = 0;
+ENetPeer *_SimpleNet__peer = 0;
+pthread_t _SimpleNet__threadID = 0;
+SimpleNet__EventCallback _SimpleNet__eventCallback = 0;
 
 
 
