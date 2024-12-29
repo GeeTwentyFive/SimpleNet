@@ -33,7 +33,15 @@ SOFTWARE.
 
 
 
-typedef void (*SimpleNet__EventCallback)(ENetEvent*);
+typedef ENetEvent SimpleNet__Event;
+
+typedef void (*SimpleNet__EventCallback)(SimpleNet__Event*);
+
+#define SimpleNet__EVENT_CONNECT ENET_EVENT_TYPE_CONNECT
+#define SimpleNet__EVENT_RECEIVE ENET_EVENT_TYPE_RECEIVE
+#define SimpleNet__EVENT_DISCONNECT ENET_EVENT_TYPE_DISCONNECT
+
+#define SimpleNet__FreePacket enet_packet_destroy
 
 
 
