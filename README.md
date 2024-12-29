@@ -2,7 +2,7 @@ Simple cross-platform client-server UDP networking library for both IPv4 *and* I
 
 # Usage:
 1) `SimpleNet__StartServer(port, maxClients, eventCallback)` or `SimpleNet__StartClient(ip, port, eventCallback)`
-2) Handle connections & received data in passed event callback function
+2) Handle connections & received data in passed event callback function (See Example below)
 3) Send data via `SimpleNet__Send(data, data_size)` -> Sends to server as client, broadcasts to all clients as server
 
 Optionally disconnect client or stop server via `SimpleNet__Stop()`
@@ -15,13 +15,13 @@ Optionally disconnect client or stop server via `SimpleNet__Stop()`
 
 
 
-void NetworkEventsCallback(ENetEvent *event) {
+void NetworkEventsCallback(SimpleNet__Event *event) {
 
 	puts("Event!");
 
 	switch (event->type) {
 
-		case ENET_EVENT_TYPE_CONNECT:
+		case SimpleNet__EVENT_CONNECT:
 
 			puts("Client connected!");
 
@@ -31,19 +31,19 @@ void NetworkEventsCallback(ENetEvent *event) {
 
 
 
-		case ENET_EVENT_TYPE_RECEIVE:
+		case SimpleNet__EVENT_RECEIVE:
 
 			puts("Got a message! :");
 
 			puts(event->packet->data);
 
-			enet_packet_destroy(event->packet);
+			SimpleNet__FreePacket(event->packet);
 
 		break;
 
 
 
-		case ENET_EVENT_TYPE_DISCONNECT:
+		case SimpleNet__EVENT_DISCONNECT:
 
 			puts("Client disconnected");
 
