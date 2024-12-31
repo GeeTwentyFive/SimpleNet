@@ -25,7 +25,7 @@ void NetworkEventsCallback(SimpleNet__Event *event) {
 
 			puts("Client connected!");
 
-			SimpleNet__Send("Hello, client!", sizeof("Hello, client!"));
+			SimpleNet__Send("Hello, client!", sizeof("Hello, client!"), 0);
 
 		break;
 
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 	if (argv[1][0] == 's') SimpleNet__StartServer(42069, 1, &NetworkEventsCallback);
 	else if (argv[1][0] == 'c') {
 		SimpleNet__StartClient("localhost", 42069, &NetworkEventsCallback);
-		SimpleNet__Send("Hello, server!", sizeof("Hello, server!"));
+		SimpleNet__Send("Hello, server!", sizeof("Hello, server!"), 0);
 	}
 	else return 1;
 
