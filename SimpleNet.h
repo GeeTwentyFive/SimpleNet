@@ -26,32 +26,34 @@ SOFTWARE.
 #ifndef _SIMPLE_NET_H
 #define _SIMPLE_NET_H
 
-#include <pthread.h>
-
 #define ENET_IMPLEMENTATION
 #include "external/enet.h"
 
 
 
-typedef ENetEvent SimpleNet__Event;
+#define SimpleNet__PEER_TIMEOUT 5000
 
-typedef void (*SimpleNet__EventCallback)(SimpleNet__Event*);
+
+
+typedef ENetEvent SimpleNet__Event;
 
 #define SimpleNet__EVENT_CONNECT ENET_EVENT_TYPE_CONNECT
 #define SimpleNet__EVENT_RECEIVE ENET_EVENT_TYPE_RECEIVE
 #define SimpleNet__EVENT_DISCONNECT ENET_EVENT_TYPE_DISCONNECT
+#define SimpleNet__EVENT_DISCONNECT_TIMEOUT ENET_EVENT_TYPE_DISCONNECT_TIMEOUT
 
 #define SimpleNet__FreePacket enet_packet_destroy
 
 typedef enum {
         SimpleNet__SUCCESS,
+        SimpleNet__ERROR_ALREADY_RUNNING,
         SimpleNet__ERROR_FAILED_TO_INITIALIZE_ENET,
         SimpleNet__ERROR_FAILED_TO_CREATE_HOST,
         SimpleNet__ERROR_FAILED_TO_SET_ADDRESS,
         SimpleNet__ERROR_FAILED_TO_CONNECT_TO_SERVER,
         SimpleNet__ERROR_FAILED_TO_CREATE_PACKET,
         SimpleNet__ERROR_FAILED_TO_QUEUE_PACKET,
-        SimpleNet__ERROR_FAILED_TO_START_THREAD
+        SimpleNet__ERROR_SERVICE_FAILED
 } SimpleNet__Error;
 
 
@@ -60,27 +62,10 @@ int _SimpleNet__bInitialized = 0;
 ENetAddress _SimpleNet__address = {0};
 ENetHost *_SimpleNet__host = 0;
 ENetPeer *_SimpleNet__peer = 0;
-pthread_t _SimpleNet__threadID = 0;
-SimpleNet__EventCallback _SimpleNet__eventCallback = 0;
 
 
 
-void* _SimpleNet__Thread(void*) {
-
-        ENetEvent event;
-        while (enet_host_service(_SimpleNet__host, &event, 1) >= 0) {
-
-                if (event.type != ENET_EVENT_TYPE_NONE) _SimpleNet__eventCallback(&event);
-
-        }
-
-}
-
-
-
-SimpleNet__Error SimpleNet__StartServer(unsigned short port, size_t maxClients, SimpleNet__EventCallback eventCallback) {
-
-        _SimpleNet__eventCallback = eventCallback;
+SimpleNet__Error SimpleNet__StartServer(unsigned short port, size_t maxClients) {
 
         if (!_SimpleNet__bInitialized) {
                 if (enet_initialize() != 0) return SimpleNet__ERROR_FAILED_TO_INITIALIZE_ENET;
@@ -94,8 +79,6 @@ SimpleNet__Error SimpleNet__StartServer(unsigned short port, size_t maxClients, 
         _SimpleNet__host = enet_host_create(&_SimpleNet__address, maxClients, 1, 0, 0);
         if (_SimpleNet__host == NULL) return SimpleNet__ERROR_FAILED_TO_CREATE_HOST;
 
-        if (pthread_create(&_SimpleNet__threadID, 0, &_SimpleNet__Thread, 0) != 0) return SimpleNet__ERROR_FAILED_TO_START_THREAD;
-
 
 
         return SimpleNet__SUCCESS;
@@ -104,9 +87,7 @@ SimpleNet__Error SimpleNet__StartServer(unsigned short port, size_t maxClients, 
 
 
 
-SimpleNet__Error SimpleNet__StartClient(char *address, unsigned short port, SimpleNet__EventCallback eventCallback) {
-
-        _SimpleNet__eventCallback = eventCallback;
+SimpleNet__Error SimpleNet__StartClient(char *address, unsigned short port) {
 
         if (!_SimpleNet__bInitialized) {
                 if (enet_initialize() != 0) return SimpleNet__ERROR_FAILED_TO_INITIALIZE_ENET;
@@ -131,8 +112,6 @@ SimpleNet__Error SimpleNet__StartClient(char *address, unsigned short port, Simp
                 return SimpleNet__ERROR_FAILED_TO_CONNECT_TO_SERVER;
         }
 
-        if (pthread_create(&_SimpleNet__threadID, 0, &_SimpleNet__Thread, 0) != 0) return SimpleNet__ERROR_FAILED_TO_START_THREAD;
-
 
 
         return SimpleNet__SUCCESS;
@@ -141,13 +120,7 @@ SimpleNet__Error SimpleNet__StartClient(char *address, unsigned short port, Simp
 
 
 
-int SimpleNet__Send(void *data, size_t data_size, int *bThreadLocked) {
-        if (bThreadLocked != 0) {
-                // If locked: wait for data to be unlocked
-                if (*bThreadLocked) while (*bThreadLocked){};
-                // Lock data
-                *bThreadLocked = 1;
-        }
+SimpleNet__Error SimpleNet__QueueSend(void *data, size_t data_size) {
 
         ENetPacket *packet = enet_packet_create(data, data_size, 0);
         if (packet == NULL) return SimpleNet__ERROR_FAILED_TO_CREATE_PACKET;
@@ -158,11 +131,16 @@ int SimpleNet__Send(void *data, size_t data_size, int *bThreadLocked) {
                 enet_host_broadcast(_SimpleNet__host, 0, packet);
         }
 
-        // Unlock data if using thread lock
-        if (bThreadLocked != 0) *bThreadLocked = 0;
-
         return SimpleNet__SUCCESS;
 
+}
+
+
+
+int SimpleNet__Service(SimpleNet__Event *event_OUT) {
+        int status = enet_host_service(_SimpleNet__host, event_OUT, 0);
+        if (event_OUT->type == SimpleNet__EVENT_CONNECT) enet_peer_timeout(event_OUT->peer, SimpleNet__PEER_TIMEOUT, SimpleNet__PEER_TIMEOUT, SimpleNet__PEER_TIMEOUT);
+        return status;
 }
 
 
@@ -175,8 +153,6 @@ void SimpleNet__Stop() {
 
                 enet_peer_reset(_SimpleNet__peer);
         }
-
-        pthread_cancel(_SimpleNet__threadID);
 
         enet_host_destroy(_SimpleNet__host);
 
