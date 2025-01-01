@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 	if (argv[1][0] == 's') SimpleNet__StartServer(42069, 1);
 	else if (argv[1][0] == 'c') {
 		SimpleNet__StartClient("localhost", 42069);
-		SimpleNet__QueueSend("Hello, server!", sizeof("Hello, server!"));
+		SimpleNet__QueueSend(0, "Hello, server!", sizeof("Hello, server!"));
 	}
 	else return 1;
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 
 					puts("Client connected!");
 
-					SimpleNet__QueueSend("Hello, client!", sizeof("Hello, client!"));
+					SimpleNet__QueueSend(0, "Hello, client!", sizeof("Hello, client!"));
 
 				break;
 
