@@ -56,6 +56,8 @@ typedef enum {
         SimpleNet__ERROR_SERVICE_FAILED
 } SimpleNet__Error;
 
+enum { SimpleNet__SERVER_SHUTDOWN = -1 };
+
 
 
 int _SimpleNet__bInitialized = 0;
@@ -147,7 +149,7 @@ int SimpleNet__Service(SimpleNet__Event *event_OUT) {
 
 
 
-int _SimpleNet__shutdownPacket = -1;
+int _SimpleNet__shutdownPacket = SimpleNet__SERVER_SHUTDOWN;
 
 void SimpleNet__Stop() {
 
