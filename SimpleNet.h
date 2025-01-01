@@ -120,12 +120,14 @@ SimpleNet__Error SimpleNet__StartClient(char *address, unsigned short port) {
 
 
 
-SimpleNet__Error SimpleNet__QueueSend(void *data, size_t data_size) {
+SimpleNet__Error SimpleNet__QueueSend(ENetPeer *target, void *data, size_t data_size) {
 
         ENetPacket *packet = enet_packet_create(data, data_size, 0);
         if (packet == NULL) return SimpleNet__ERROR_FAILED_TO_CREATE_PACKET;
 
-        if (_SimpleNet__peer != 0) {
+        if (target != 0) {
+                if (enet_peer_send(target, 0, packet) != 0) return SimpleNet__ERROR_FAILED_TO_QUEUE_PACKET;
+        } else if (_SimpleNet__peer != 0) {
                 if (enet_peer_send(_SimpleNet__peer, 0, packet) != 0) return SimpleNet__ERROR_FAILED_TO_QUEUE_PACKET;
         } else {
                 enet_host_broadcast(_SimpleNet__host, 0, packet);
