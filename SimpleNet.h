@@ -147,7 +147,12 @@ int SimpleNet__Service(SimpleNet__Event *event_OUT) {
 
 
 
+int _SimpleNet__shutdownPacket = -1;
+
 void SimpleNet__Stop() {
+
+        SimpleNet__QueueSend(0, &_SimpleNet__shutdownPacket, sizeof(int));
+        enet_host_flush(_SimpleNet__host);
 
         if (_SimpleNet__peer != 0) {
                 enet_peer_disconnect(_SimpleNet__peer, 0);
