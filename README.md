@@ -1,9 +1,9 @@
 Simple cross-platform client-server UDP networking library for both IPv4 *and* IPv6
 
 # Usage:
-1) `SimpleNet__StartServer(port, maxClients, eventCallback)` or `SimpleNet__StartClient(ip, port, eventCallback)`
+1) `SimpleNet__StartServer(port, maxClients)` or `SimpleNet__StartClient(ip, port)`
 2) `SimpleNet__Service()` -> Handle connections & received data
-3) Send data via `SimpleNet__QueueSend(data, data_size)` -> Sends to server as client, broadcasts to all clients as server
+3) Send data via `SimpleNet__Send(0, data, data_size)` -> Sends to server as client, broadcasts to all clients as server
 
 Optionally disconnect client or stop server via `SimpleNet__Stop()`
 
