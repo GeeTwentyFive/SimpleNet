@@ -155,7 +155,7 @@ int _SimpleNet__shutdownPacket = SimpleNet__SERVER_SHUTDOWN;
 
 void SimpleNet__Stop() {
 
-        SimpleNet__QueueSend(0, &_SimpleNet__shutdownPacket, sizeof(int));
+        SimpleNet__Send(0, &_SimpleNet__shutdownPacket, sizeof(int));
         enet_host_flush(_SimpleNet__host);
 
         if (_SimpleNet__peer != 0) {
